@@ -6,7 +6,13 @@ import java.io.IOException;
  * También identifica la estación que tiene la lectura de PM2.5 más alta.</p>
  */
 public class IngestaSensores {
+    private static final double TEMPERATURA_MINIMA = -40.0;
+    private static final double TEMPERATURA_MAXIMA = 60.0;
 
+    private static final double HUMEDAD_MINIMA = 0.0;
+    private static final double HUMEDAD_MAXIMA = 100.0;
+
+    private static final double PM25_MINIMO = 0.0;
     /**
      * Punto de entrada del programa.
      *
@@ -25,14 +31,48 @@ public class IngestaSensores {
 
         // Ahora crearLectura retorne un objeto LecturaSensor correctamente
         LecturaSensor lectura = crearLectura(campos);
+        String motivo = obtenerMotivoInvalidez(lectura);
 
+        if (motivo != null) {
+            System.out.println("Registro rechazado: " + motivo);
+            return;
+        }
         imprimirLectura(lectura);
     }
 
     // ==========================================
     // MÉTODOS AUXILIARES
     // ==========================================
+    public static boolean esTemperaturaValida(double temperatura) {
+        return temperatura >= TEMPERATURA_MINIMA &&
+                temperatura <= TEMPERATURA_MAXIMA;
+    }
 
+    public static boolean esHumedadValida(double humedad) {
+        return humedad >= HUMEDAD_MINIMA &&
+                humedad <= HUMEDAD_MAXIMA;
+    }
+
+    public static boolean esPm25Valido(double pm25) {
+        return pm25 >= PM25_MINIMO;
+    }
+
+    public static String obtenerMotivoInvalidez(LecturaSensor lectura) {
+
+        if (!esTemperaturaValida(lectura.getTemperatura())) {
+            return "Temperatura fuera de rango";
+        }
+
+        if (!esHumedadValida(lectura.getHumedad())) {
+            return "Humedad fuera de rango";
+        }
+
+        if (!esPm25Valido(lectura.getPm25())) {
+            return "PM2.5 negativo";
+        }
+
+        return null;
+    }
     /**
      * Separa una línea de texto CSV separada por comas.
      */

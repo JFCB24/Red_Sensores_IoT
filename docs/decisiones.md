@@ -23,4 +23,3 @@ Formato: cada entrada con fecha, decision, alternativas consideradas, justificac
 - **Elegida:** TEMP_MIN=-40, TEMP_MAX=60, HUM_MIN=0, HUM_MAX=100, PM_MIN=0, CODIGO_DESCONECTADO=-999
 - **Justificacion:** si cambian umbrales de la norma ambiental, se cambia en un solo lugar.
 
-## S2 - [Pendiente]

@@ -6,6 +6,7 @@ import java.io.IOException;
  * También identifica la estación que tiene la lectura de PM2.5 más alta.</p>
  */
 public class IngestaSensores {
+
     private static final double TEMPERATURA_MINIMA = -40.0;
     private static final double TEMPERATURA_MAXIMA = 60.0;
 
@@ -13,6 +14,7 @@ public class IngestaSensores {
     private static final double HUMEDAD_MAXIMA = 100.0;
 
     private static final double PM25_MINIMO = 0.0;
+
     /**
      * Punto de entrada del programa.
      *
@@ -22,27 +24,44 @@ public class IngestaSensores {
     public static void main(String[] args) throws IOException {
         String linea = "EST-001,2026-09-07 08:00,18.5,75.2,32.4";
 
+        procesarLinea(linea);
+    }
+
+    /**
+     * Procesa una línea de texto integrando conversión segura y validación de dominio.
+     */
+    public static void procesarLinea(String linea) {
         String[] campos = separarCampos(linea);
 
         if (!tieneNumeroCorrectoDeCampos(campos)) {
-            System.out.println("Registro inválido");
+            System.out.println("Registro inválido: Cantidad incorrecta de campos");
             return;
         }
 
-        // Ahora crearLectura retorne un objeto LecturaSensor correctamente
-        LecturaSensor lectura = crearLectura(campos);
+        // --- PARTE DE JUAN PABLO: Conversión segura y manejo de excepciones ---
+        // Se usa ProcesadorLecturas para evitar que valores como "abc" tumben la ejecución
+        LecturaSensor lectura = ProcesadorLecturas.crearLecturaSegura(campos);
+
+        if (lectura == null) {
+            System.out.println("Registro rechazado: Uno o más valores no son números válidos");
+            return;
+        }
+
+        // --- VALIDACIÓN DE DOMINIO ---
         String motivo = obtenerMotivoInvalidez(lectura);
 
         if (motivo != null) {
             System.out.println("Registro rechazado: " + motivo);
             return;
         }
+
         imprimirLectura(lectura);
     }
 
     // ==========================================
-    // MÉTODOS AUXILIARES
+    // MÉTODOS AUXILIARES Y VALIDACIONES DE DOMINIO
     // ==========================================
+
     public static boolean esTemperaturaValida(double temperatura) {
         return temperatura >= TEMPERATURA_MINIMA &&
                 temperatura <= TEMPERATURA_MAXIMA;
@@ -73,6 +92,7 @@ public class IngestaSensores {
 
         return null;
     }
+
     /**
      * Separa una línea de texto CSV separada por comas.
      */
@@ -85,19 +105,6 @@ public class IngestaSensores {
      */
     public static boolean tieneNumeroCorrectoDeCampos(String[] campos) {
         return campos != null && campos.length == 5;
-    }
-
-    /**
-     * Parsea los campos de texto y construye un objeto de tipo LecturaSensor.
-     */
-    public static LecturaSensor crearLectura(String[] campos) {
-        String id = campos[0];
-        String fechaHora = campos[1];
-        double temperatura = Double.parseDouble(campos[2]);
-        double humedad = Double.parseDouble(campos[3]);
-        double pm25 = Double.parseDouble(campos[4]);
-
-        return new LecturaSensor(id, fechaHora, temperatura, humedad, pm25);
     }
 
     /**
